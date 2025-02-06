@@ -19,18 +19,18 @@ selectVideo videoList = do
   putStr $ menu list 0 ++ "> "
   hFlush stdout
   i <- getLine
-  callCommand $ "mpv https://youtu.be/" ++ (fst $ list !! (read i :: Int))
+  let url = "https://youtu.be/" ++ (fst $ list !! (read i :: Int))
+  putStrLn url
+  callCommand $ "mpv " ++ url
 
-search q = curlGetString query [CurlNoProgress True] >>= selectVideo . getResults . map (intercalate " ") . map words . lines . snd
-  where query = take (length q - 1) q
-        getResults [] = Nothing
+search query = curlGetString (init query) [CurlNoProgress True] >>= selectVideo . getResults . map (intercalate " ") . map words . lines . snd
+  where getResults [] = Nothing
         getResults (x:xs)
           | x =~ "\\.*videoId\\.*" = Just [(init . tail . last . words $ x,
                                              drop 9 . init . head . dropWhile (\x -> not $ x =~ "\\.*title\\.*") $ xs)
                                           ] `mappend` getResults xs
           | otherwise = getResults xs
 
-main :: IO ()
 main = (++) <$> ((++) url <$> intercalate "+" <$> getArgs) <*> ((++) url' <$> ytKey) >>= search
 
 url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q="
