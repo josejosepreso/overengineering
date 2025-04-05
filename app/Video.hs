@@ -16,4 +16,7 @@ getVideo (x:xs) = let videoId = init . tail . last . words $ x
                       channel = init . init . drop 17 . head $ fromChannel
                       fromDate = dropWhile (\a -> not $ a =~ "\\.*publishTime\\.*") $ fromChannel
                       date = init . drop 16 . head $ fromDate
-                  in Video videoId title channel date
+                  in Video videoId title channel (getDate date)
+
+getDate :: String -> String
+getDate datetime = datetime =~ "^[0-9]{4}-[0-9]{2}-[0-9]{2}" :: String
